@@ -5,17 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
+using OxyPlot;
+using OxyPlot.Series;
 
 namespace TremorAnalysis
 {
     class MainPipeline
     {
         private MainWindow myWindow;
-        private PXCMSenseManager senseManager;                
+        private PXCMSenseManager senseManager;
         private bool disconnected = false;
         private byte[] LUT;
         private int handId = -1;
-        private long startTime;
+        private long startTime;// Stores the first timestamp when a hand is recognized
+        private int frameCounter;
+        private int frameHandCounter;// Computes only the frames that a hand was recognized
+
+        private int chartWindow = 10;
 
         public MainPipeline(MainWindow window)
         {
@@ -64,7 +70,7 @@ namespace TremorAnalysis
             if (device != null)
             {
                 pxcmStatus result = device.QueryDeviceInfo(out dInfo);
-                if (result == pxcmStatus.PXCM_STATUS_NO_ERROR && dInfo != null && 
+                if (result == pxcmStatus.PXCM_STATUS_NO_ERROR && dInfo != null &&
                     dInfo.model == PXCMCapture.DeviceModel.DEVICE_MODEL_IVCAM)
                 {
                     // Camera accuracy settings
@@ -107,14 +113,35 @@ namespace TremorAnalysis
                 labeledBitmap.Dispose();
                 return;
             }
-            else if (handId == -1)            
+            else if (handId == -1)
                 handData.QueryHandId(PXCMHandData.AccessOrderType.ACCESS_ORDER_BY_TIME, 0, out handId);
-            
+
             PXCMHandData.IHand iHandData;
             handData.QueryHandDataById(handId, out iHandData);
-            if (iHandData != null && 
+            if (iHandData != null &&
                 (iHandData.QuerySegmentationImage(out image) >= pxcmStatus.PXCM_STATUS_NO_ERROR))
             {
+                frameHandCounter++;
+                //Store (not yet) and plot hand data
+                HandIRSData handIRSData;
+                if (frameHandCounter == 1)
+                {
+                    handIRSData = new HandIRSData(iHandData);
+                    startTime = handIRSData.startTime;
+                }
+                else handIRSData = new HandIRSData(iHandData, startTime);
+
+                //Maybe it will be better put the chart update in another thread
+                // 45 * chartWindow(default value is 10)
+                if (myWindow.lineSerieSpeedNorm.Points.Count() >= (45 * chartWindow))
+                {
+                    myWindow.lineSerieSpeedNorm.Points.RemoveAt(0);
+                }
+                myWindow.lineSerieSpeedNorm.Points.Add(handIRSData.getPlotData());
+
+                // Update palm speed chart
+                myWindow.updateSpeedNormChart();               
+
                 // Draw image
                 PXCMImage.ImageData data;
                 if (image.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.PixelFormat.PIXEL_FORMAT_Y8,
@@ -173,33 +200,7 @@ namespace TremorAnalysis
             // Clean up
             image.Dispose();
             depth.Dispose();
-            handData.Dispose();            
-        }
-
-        private string dataToLog(PXCMHandData.IHand iHandData, int frameCounter)
-        {
-            PXCMPoint3DF32 massCenter = iHandData.QueryMassCenterWorld();
-            PXCMHandData.JointData jointData;
-            iHandData.QueryTrackedJoint(PXCMHandData.JointType.JOINT_CENTER, out jointData);
-            int confidenceJoint = jointData.confidence;
-            PXCMPoint3DF32 positionWorldJoint = jointData.positionWorld;            
-            PXCMPoint3DF32 speedJoint = jointData.speed;
-
-            int id = iHandData.QueryUniqueId();
-            long timeStamp = iHandData.QueryTimeStamp();// The same of image.timeStamp
-            bool isCalibrated = iHandData.IsCalibrated();
-            Int32 openness = iHandData.QueryOpenness();// 0=close hand | 100=hand open
-
-            if (frameCounter == 1)            
-                startTime = timeStamp;
-            
-            string log = "HandID: " + id + " Time elapsed (s): " + UsefulFunctions.nsToS(timeStamp - startTime) +
-                " Calibrated? " + isCalibrated + " Hand open? " + openness +
-                "\nHand mass center -> " + UsefulFunctions.point3DToString(massCenter) +
-                "\nJoint center - Confidence: " + confidenceJoint +
-                    "\nSpeed -> " + UsefulFunctions.point3DToString(speedJoint) +
-                "\nPosition world -> " + UsefulFunctions.point3DToString(positionWorldJoint);
-            return log;
+            handData.Dispose();
         }
 
         public void Start()
@@ -226,7 +227,8 @@ namespace TremorAnalysis
                 myWindow.UpdateStatus("Init Started");
                 ConfigureDevice();
                 myWindow.UpdateStatus("Streaming");
-                int frameCounter = 0;
+                frameCounter = 0;
+                frameHandCounter = 0;
                 startTime = 0;
                 /* Loop through the each frame */
                 while (!myWindow.stop)
@@ -257,8 +259,7 @@ namespace TremorAnalysis
                             DisplayPicture(sample.depth, handData);
                         }
                         timer.Tick();
-                        // Clean up
-                        //sample.ReleaseImages(); //Tested and crash the app
+                        // Clean up                        
                         handData.Dispose();
                         handModule.Dispose();
                     }
@@ -276,6 +277,6 @@ namespace TremorAnalysis
             {
                 myWindow.UpdateStatus("Stopped");
             }
-        }
+        }        
     }
 }

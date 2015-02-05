@@ -13,6 +13,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Drawing;
+using System.Threading;
+using OxyPlot;
+using OxyPlot.Series;
 
 namespace TremorAnalysis
 {
@@ -22,11 +25,15 @@ namespace TremorAnalysis
     public partial class MainWindow : Window
     {
         public volatile bool stop = false;
+        private PlotModel plotModelSpeedNorm;
+        public LineSeries lineSerieSpeedNorm;
 
         public MainWindow()
         {
             InitializeComponent();
+            Thread.CurrentThread.Priority = ThreadPriority.Highest;
             stopButton.IsEnabled = false;
+            initSpeedNormChart();
         }
 
         public void UpdateStatus(string status)
@@ -39,7 +46,7 @@ namespace TremorAnalysis
 
         public void UpdateFPSStatus(string status)
         {
-            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
+            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
             {
                 fpsLabel.Content = status;
             }));
@@ -51,31 +58,43 @@ namespace TremorAnalysis
             stopButton.IsEnabled = true;
 
             stop = false;
-            // Start the main_pipeline thread
-            System.Threading.Thread thread = new System.Threading.Thread(startHandTracking);
-            thread.Priority = System.Threading.ThreadPriority.Highest;
-            thread.Start();
-            System.Threading.Thread.Sleep(5);
+            // Start main_pipeline thread
+            Thread handTrackingThread = new Thread(startHandTracking);
+            handTrackingThread.Priority = ThreadPriority.Highest;
+            handTrackingThread.Start();
+
+            // Start chart handle thread
+            //Thread chartHandleThread = new Thread(startChartHandle);
+            //chartHandleThread.Priority = ThreadPriority.Highest;
+            //chartHandleThread.Start();
+            //Thread.Sleep(5);
+        }
+
+        private void startChartHandle()
+        {
+
         }
 
         private void startHandTracking()
         {
             MainPipeline mp = new MainPipeline(this);
+            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
+            {
+                streamImg.Source = null;
+                lineSerieSpeedNorm.Points.Clear();
+                updateSpeedNormChart();
+            }));
             mp.Start();
             this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
             {
                 startButton.IsEnabled = true;
                 stopButton.IsEnabled = false;
-                streamImg.Source = null;
             }));
         }
 
         private void stopButton_Click(object sender, RoutedEventArgs e)
         {
             stop = true;
-            //stopButton.IsEnabled = false;
-            //System.Threading.Thread.Sleep(5);
-            //startButton.IsEnabled = true;
         }
 
         public void DisplayBitmap(Bitmap bitmap)
@@ -84,17 +103,10 @@ namespace TremorAnalysis
             {
                 if (bitmap != null)
                 {
-                    // Mirror the stream Image control
-                    //streamImg.RenderTransformOrigin = new System.Windows.Point(0.5, 0.5);
-                    //ScaleTransform mainTransform = new ScaleTransform();
-                    //mainTransform.ScaleX = -1;
-                    //mainTransform.ScaleY = 1;
-                    //streamImg.RenderTransform = mainTransform;
-
                     // Resizes the original bitmap to fill better the image component
                     // The image component should keep the aspect ratio
                     int unitsToResize = Convert.ToInt32(bitmap.Width - imgBorder.Width);
-                    Bitmap resized = new Bitmap(bitmap, 
+                    Bitmap resized = new Bitmap(bitmap,
                         new System.Drawing.Size(bitmap.Width - unitsToResize, bitmap.Height - unitsToResize));
                     // Display the stream
                     streamImg.Source = ConvertBitmap.BitmapToBitmapSource(resized);
@@ -108,6 +120,55 @@ namespace TremorAnalysis
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             stop = true;
+        }
+
+        private void initSpeedNormChart()
+        {
+            plotModelSpeedNorm = new PlotModel
+            {
+                Title = "Palm Speed (norm)",
+                TitleFontSize = 12,
+                //PlotAreaBackground = OxyColor.FromRgb(229, 229, 229),
+                TitlePadding = 1,
+                //Background = OxyColor.FromRgb(229, 229, 229),
+                TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinPlotArea
+                //LegendTitle = "Palm speed (norm)",
+                //LegendOrientation = LegendOrientation.Horizontal,
+                //LegendPlacement = LegendPlacement.Inside,
+                //LegendPosition = LegendPosition.TopRight
+            };
+            OxyPlot.Axes.LinearAxis xAxis = new OxyPlot.Axes.LinearAxis();
+            xAxis.Position = OxyPlot.Axes.AxisPosition.Bottom;
+            xAxis.Title = "seconds";
+            xAxis.MinorStep = 0.5;
+            xAxis.MajorStep = 1;
+
+            OxyPlot.Axes.LinearAxis yAxis = new OxyPlot.Axes.LinearAxis();
+            yAxis.Position = OxyPlot.Axes.AxisPosition.Left;
+            yAxis.Title = "||speed||";
+            yAxis.Maximum = 2;
+
+            plotModelSpeedNorm.Axes.Add(xAxis);
+            plotModelSpeedNorm.Axes.Add(yAxis);
+
+            lineSerieSpeedNorm = new LineSeries
+            {
+                StrokeThickness = 2,
+                CanTrackerInterpolatePoints = false,
+                Title = "||Speed (m/s)||",
+                Smooth = false
+            };
+            plotModelSpeedNorm.Series.Add(lineSerieSpeedNorm);
+
+            palmSpeedChart.Model = plotModelSpeedNorm;
+        }
+
+        public void updateSpeedNormChart()
+        {
+            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action(delegate()
+           {
+               palmSpeedChart.InvalidatePlot(true);
+           }));
         }
     }
 }
