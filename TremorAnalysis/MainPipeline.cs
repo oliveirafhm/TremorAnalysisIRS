@@ -21,7 +21,7 @@ namespace TremorAnalysis
         private int frameCounter;
         private int frameHandCounter;// Computes only the frames that a hand was recognized
 
-        private int chartWindow = 10;
+        //private int speedNormChartWindow = 10;
 
         public MainPipeline(MainWindow window)
         {
@@ -130,17 +130,19 @@ namespace TremorAnalysis
                     startTime = handIRSData.startTime;
                 }
                 else handIRSData = new HandIRSData(iHandData, startTime);
-
-                //Maybe it will be better put the chart update in another thread
-                // 45 * chartWindow(default value is 10)
-                if (myWindow.lineSerieSpeedNorm.Points.Count() >= (45 * chartWindow))
+                
+                // Mutex
+                lock (myWindow.lineSerieSpeedNormBuffer)
                 {
-                    myWindow.lineSerieSpeedNorm.Points.RemoveAt(0);
+                    // 50 * speedNormChartWindow (default value is 10) or 10 seconds
+                    //if (myWindow.lineSerieSpeedNormBuffer.Count() >= (50 * speedNormChartWindow))
+                    //{
+                    //    myWindow.lineSerieSpeedNormBuffer.RemoveAt(0);
+                    //}
+                    myWindow.lineSerieSpeedNormBuffer.Add(handIRSData.getPlotData());
+                    // Update palm speed chart
+                    myWindow.plotSNNow = true;
                 }
-                myWindow.lineSerieSpeedNorm.Points.Add(handIRSData.getPlotData());
-
-                // Update palm speed chart
-                myWindow.updateSpeedNormChart();               
 
                 // Draw image
                 PXCMImage.ImageData data;
@@ -277,6 +279,6 @@ namespace TremorAnalysis
             {
                 myWindow.UpdateStatus("Stopped");
             }
-        }        
+        }
     }
 }

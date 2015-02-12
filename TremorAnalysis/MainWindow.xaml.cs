@@ -24,16 +24,17 @@ namespace TremorAnalysis
     /// </summary>
     public partial class MainWindow : Window
     {
-        public volatile bool stop = false;
-        private PlotModel plotModelSpeedNorm;
+        public bool stop = false;
+        public PlotModel plotModelSpeedNorm;
         public LineSeries lineSerieSpeedNorm;
+        public List<DataPoint> lineSerieSpeedNormBuffer = new List<DataPoint>();
+        public bool plotSNNow = false;
 
         public MainWindow()
         {
             InitializeComponent();
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
-            stopButton.IsEnabled = false;
-            initSpeedNormChart();
+            stopButton.IsEnabled = false;            
         }
 
         public void UpdateStatus(string status)
@@ -64,15 +65,19 @@ namespace TremorAnalysis
             handTrackingThread.Start();
 
             // Start chart handle thread
-            //Thread chartHandleThread = new Thread(startChartHandle);
-            //chartHandleThread.Priority = ThreadPriority.Highest;
-            //chartHandleThread.Start();
+            Thread chartHandleThread = new Thread(startChartHandle);
+            chartHandleThread.Priority = ThreadPriority.Highest;
+            chartHandleThread.Start();
             //Thread.Sleep(5);
         }
 
         private void startChartHandle()
         {
+            ChartThread ct = new ChartThread(this);
+            //this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
+            //{
 
+            //}));
         }
 
         private void startHandTracking()
@@ -121,51 +126,10 @@ namespace TremorAnalysis
         {
             stop = true;
         }
-
-        private void initSpeedNormChart()
-        {
-            plotModelSpeedNorm = new PlotModel
-            {
-                Title = "Palm Speed (norm)",
-                TitleFontSize = 12,
-                //PlotAreaBackground = OxyColor.FromRgb(229, 229, 229),
-                TitlePadding = 1,
-                //Background = OxyColor.FromRgb(229, 229, 229),
-                TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinPlotArea
-                //LegendTitle = "Palm speed (norm)",
-                //LegendOrientation = LegendOrientation.Horizontal,
-                //LegendPlacement = LegendPlacement.Inside,
-                //LegendPosition = LegendPosition.TopRight
-            };
-            OxyPlot.Axes.LinearAxis xAxis = new OxyPlot.Axes.LinearAxis();
-            xAxis.Position = OxyPlot.Axes.AxisPosition.Bottom;
-            xAxis.Title = "seconds";
-            xAxis.MinorStep = 0.5;
-            xAxis.MajorStep = 1;
-
-            OxyPlot.Axes.LinearAxis yAxis = new OxyPlot.Axes.LinearAxis();
-            yAxis.Position = OxyPlot.Axes.AxisPosition.Left;
-            yAxis.Title = "||speed||";
-            yAxis.Maximum = 2;
-
-            plotModelSpeedNorm.Axes.Add(xAxis);
-            plotModelSpeedNorm.Axes.Add(yAxis);
-
-            lineSerieSpeedNorm = new LineSeries
-            {
-                StrokeThickness = 2,
-                CanTrackerInterpolatePoints = false,
-                Title = "||Speed (m/s)||",
-                Smooth = false
-            };
-            plotModelSpeedNorm.Series.Add(lineSerieSpeedNorm);
-
-            palmSpeedChart.Model = plotModelSpeedNorm;
-        }
-
+        
         public void updateSpeedNormChart()
         {
-            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action(delegate()
+            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
            {
                palmSpeedChart.InvalidatePlot(true);
            }));
