@@ -52,6 +52,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Biolab.SJSM.DSP">
+      <HintPath>..\..\LearningRealSense\LearningRealSense\References\Biolab.SJSM.DSP.dll</HintPath>
+    </Reference>
     <Reference Include="libpxcclr.cs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca106b2214526f83, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Intel\RSSDK\bin\x64\libpxcclr.cs.dll</HintPath>
@@ -108,6 +111,7 @@
     <Compile Include="FPSTimer.cs" />
     <Compile Include="HandIRSData.cs" />
     <Compile Include="MainPipeline.cs" />
+    <Compile Include="SignalAnalysis.cs" />
     <Compile Include="UsefulFunctions.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -171,6 +175,9 @@
       <ProductName>Windows Installer 4.5</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="imgs\handtremor.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -20,7 +20,7 @@ namespace TremorAnalysis
         private PXCMPoint3DF32 positionWorldJoint;
         private PXCMPoint3DF32 speedJoint;
 
-        private double timeElapsed;
+        private double timeElapsed; // In seconds
         private double speedNorm;
         //private long startTime;
         public long startTime { get; set; }

@@ -20,9 +20,7 @@ namespace TremorAnalysis
         private long startTime;// Stores the first timestamp when a hand is recognized
         private int frameCounter;
         private int frameHandCounter;// Computes only the frames that a hand was recognized
-
-        //private int speedNormChartWindow = 10;
-
+               
         public MainPipeline(MainWindow window)
         {
             this.myWindow = window;
@@ -131,14 +129,15 @@ namespace TremorAnalysis
                 }
                 else handIRSData = new HandIRSData(iHandData, startTime);
                 
-                // Mutex
+                // Mutex signal analysis
+                lock (myWindow.speedNormBuffer)
+                {
+                    myWindow.speedNormBuffer.Add(handIRSData.getPlotData());
+                }
+
+                // Mutex chart
                 lock (myWindow.lineSerieSpeedNormBuffer)
                 {
-                    // 50 * speedNormChartWindow (default value is 10) or 10 seconds
-                    //if (myWindow.lineSerieSpeedNormBuffer.Count() >= (50 * speedNormChartWindow))
-                    //{
-                    //    myWindow.lineSerieSpeedNormBuffer.RemoveAt(0);
-                    //}
                     myWindow.lineSerieSpeedNormBuffer.Add(handIRSData.getPlotData());
                     // Update palm speed chart
                     myWindow.plotSNNow = true;

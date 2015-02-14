@@ -25,21 +25,26 @@ namespace TremorAnalysis
     public partial class MainWindow : Window
     {
         public bool stop = false;
+
         public PlotModel plotModelSpeedNorm;
         public LineSeries lineSerieSpeedNorm;
         public List<DataPoint> lineSerieSpeedNormBuffer = new List<DataPoint>();
         public bool plotSNNow = false;
 
+        public int fps = 50; // Usually value
+        public List<DataPoint> speedNormBuffer = new List<DataPoint>();
+
         public MainWindow()
         {
             InitializeComponent();
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
-            stopButton.IsEnabled = false;            
+            stopButton.IsEnabled = false;
         }
 
         public void UpdateStatus(string status)
         {
-            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
+            // Changed to BeginInvoke from Invoke
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
             {
                 statusLabel.Content = status;
             }));
@@ -47,19 +52,47 @@ namespace TremorAnalysis
 
         public void UpdateFPSStatus(string status)
         {
-            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
+            // Changed to BeginInvoke from Invoke
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
             {
                 fpsLabel.Content = status;
             }));
         }
 
+        //public void UpdateFrequencyLabel(string frequency)
+        //{
+        //    this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
+        //    {
+        //        frequencyLabel.Content = frequency;
+        //    }));
+        //}
+
+        public void UpdateRMSLabel(string rms)
+        {
+            // Changed to BeginInvoke from Invoke
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
+            {
+                rmsLabel.Content = rms;
+            }));
+        }
+
+        public void UpdateRMSCrossLabel(string rmsCross)
+        {
+            // Changed to BeginInvoke from Invoke
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
+            {
+                rmsCrossLabel.Content = rmsCross;
+            }));
+        }
+        // Take off the stop button, and put these two functions in just one button Start/Stop
         private void startButton_Click(object sender, RoutedEventArgs e)
         {
             startButton.IsEnabled = false;
             stopButton.IsEnabled = true;
 
             stop = false;
-            // Start main_pipeline thread
+
+            // Start main pipeline thread
             Thread handTrackingThread = new Thread(startHandTracking);
             handTrackingThread.Priority = ThreadPriority.Highest;
             handTrackingThread.Start();
@@ -68,29 +101,38 @@ namespace TremorAnalysis
             Thread chartHandleThread = new Thread(startChartHandle);
             chartHandleThread.Priority = ThreadPriority.Highest;
             chartHandleThread.Start();
-            //Thread.Sleep(5);
+
+            // Start signal analysis thread
+            Thread signalAnalysisThread = new Thread(startSignalAnalysis);
+            signalAnalysisThread.Priority = ThreadPriority.Highest;
+            signalAnalysisThread.Start();
+        }
+
+        private void startSignalAnalysis()
+        {
+            //UpdateFrequencyLabel(" - Hz");
+            // Window length (ms) that enable to get power of 2 in points
+            SignalAnalysis sa = new SignalAnalysis(this, 1280);
         }
 
         private void startChartHandle()
         {
             ChartThread ct = new ChartThread(this);
-            //this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
-            //{
-
-            //}));
         }
 
         private void startHandTracking()
         {
             MainPipeline mp = new MainPipeline(this);
-            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
+            // Changed to BeginInvoke from Invoke
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
             {
                 streamImg.Source = null;
                 lineSerieSpeedNorm.Points.Clear();
-                updateSpeedNormChart();
+                updateSpeedNormChart();                
             }));
             mp.Start();
-            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
+            // Changed to BeginInvoke from Invoke
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
             {
                 startButton.IsEnabled = true;
                 stopButton.IsEnabled = false;
@@ -103,8 +145,8 @@ namespace TremorAnalysis
         }
 
         public void DisplayBitmap(Bitmap bitmap)
-        {
-            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
+        {            
+            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
             {
                 if (bitmap != null)
                 {
@@ -126,10 +168,11 @@ namespace TremorAnalysis
         {
             stop = true;
         }
-        
+
         public void updateSpeedNormChart()
         {
-            this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
+            // Changed to BeginInvoke from Invoke
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
            {
                palmSpeedChart.InvalidatePlot(true);
            }));

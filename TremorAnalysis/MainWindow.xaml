@@ -2,33 +2,40 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
-        Title="Tremor Analysis using Intel RealSense" Height="647" Width="800" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Closing="Window_Closing">
+        Title="Tremor Analysis using Intel RealSense (by Fábio Henrique and Adriano Andrade)" Height="700" Width="800" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Closing="Window_Closing" 
+        Icon="/imgs/handtremor.png">
+    <!--RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.ClearTypeHint="Enabled" RenderOptions.EdgeMode="Aliased">-->
     <Grid>
         <Grid.RowDefinitions>
             <!--<RowDefinition Height="20"/>-->
-            <RowDefinition Height="585"/>
+            <RowDefinition Height="638"/>
             <RowDefinition Height="35"/>
         </Grid.RowDefinitions>
         <!--<Menu Grid.Row="0"></Menu>-->
         <TabControl Grid.Row="0">
-            <TabItem Header="Patient data">
+            <!--<TabItem Header="Patient data" IsEnabled="False">
                 <Grid Background="#FFE5E5E5">
 
                 </Grid>
-            </TabItem>
+            </TabItem>-->
             <TabItem Header="Capture and analysis" Selector.IsSelected="True">
                 <Grid Background="#FFE5E5E5">
-                    <Border x:Name="imgBorder" BorderBrush="DarkGray" BorderThickness="1" HorizontalAlignment="Left" Height="340" Margin="270,10,0,0" VerticalAlignment="Top" Width="500">
+                    <Border x:Name="imgBorder" BorderBrush="DarkGray" BorderThickness="1" HorizontalAlignment="Left" Height="340" Margin="273,10,0,0" VerticalAlignment="Top" Width="500">
                         <Image x:Name="streamImg" Stretch="Fill"/>
                     </Border>
                     <Button x:Name="startButton" Content="Start" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Height="30" Click="startButton_Click"/>
                     <Button x:Name="stopButton" Content="Stop" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Height="30" Click="stopButton_Click"/>
-                    <oxy:PlotView Name="palmSpeedChart" Margin="0,355,0,0" Background="#E5E5E5"/>
+                    <oxy:PlotView Name="palmSpeedChart" Margin="0,355,5,127" Background="#E5E5E5"/>
+                    <oxy:PlotView Name="rmsChart" Margin="0,485,5,5" Background="#E5E5E5"/>
+                    <Label Content="RMS Crossing" HorizontalAlignment="Left" Margin="10,56,0,0" VerticalAlignment="Top" FontSize="20"/>
+                    <Label x:Name="rmsCrossLabel" Content="-" HorizontalAlignment="Left" Margin="28,98,0,0" VerticalAlignment="Top" FontSize="20"/>
+                    <Label Content="RMS" HorizontalAlignment="Left" Margin="10,140,0,0" VerticalAlignment="Top" FontSize="20"/>
+                    <Label x:Name="rmsLabel" Content="-" HorizontalAlignment="Left" Margin="27,182,0,0" VerticalAlignment="Top" FontSize="20"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Configuration">
+            <!--<TabItem Header="Configuration" IsEnabled="False">
                 <Grid Background="#FFE5E5E5"/>
-            </TabItem>
+            </TabItem>-->
         </TabControl>
         <StatusBar x:Name="statusBar" Grid.Row="1" VerticalAlignment="Top" VerticalContentAlignment="Top">
             <StatusBarItem>
