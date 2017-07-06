@@ -1,0 +1,11 @@
+centerPoint The image coordinate of the center point of the blob. // Este método fornece apenas X e Y 
+
+The QueryMassCenterWorld function returns the 3D center of mass point of the hand, in the camera coordinate system.
+
+JOINT_CENTER The palm center joint. // Mais estável que QueryMassCenterWorld
+
+FPS on enableStream() can't be 50. Why? Founded in the documentation, it can be only 30 or 60 fps.
+
+Testar os algoritmos para smooth data.
+
+SetDepthConfidenceThreshold
