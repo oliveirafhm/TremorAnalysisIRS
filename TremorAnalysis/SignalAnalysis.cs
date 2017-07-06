@@ -11,8 +11,10 @@ namespace TremorAnalysis
     {
 
         private MainWindow myWindow;
+        private RMSChart rmsChart;
         private double[] signalWindow;
-        private int windowLengthP; // In points, the amostration rate usually is 50 hz
+        private int signalWindowCounter = 0;
+        private int windowLengthP; // In points (this value is calculated using windowLengthMS), the amostration rate usually is 50 hz
         private int windowLengthMS; // In milliseconds
         private bool sleep = false;
 
@@ -21,6 +23,7 @@ namespace TremorAnalysis
         {
             this.myWindow = myWindow;
             this.windowLengthMS = windowLengthMS;
+            rmsChart = new RMSChart(myWindow);
             initSignalAnalysis();
             startSignalAnalysis();
         }
@@ -68,12 +71,16 @@ namespace TremorAnalysis
                     continue;
                 }
                 signalWindow = getPointsFromBuffer();
-                
+                signalWindowCounter++;
                 double rms = UsefulFunctions.rootMeanSquare(signalWindow);
-                myWindow.UpdateRMSLabel(rms.ToString("F2"));
+                //myWindow.UpdateRMSLabel(rms.ToString("F2"));
+                rmsChart.insertRMSData(signalWindowCounter, rms);
 
                 int rmsCross = UsefulFunctions.rmsCrossing(signalWindow, rms);
-                myWindow.UpdateRMSCrossLabel(rmsCross.ToString());
+                //myWindow.UpdateRMSCrossLabel(rmsCross.ToString());
+                rmsChart.insertRMSCrossData(signalWindowCounter, rmsCross);
+
+                rmsChart.updateRMSChart();
 
                 //double[] x = null;
                 //double[] y = null;
@@ -90,6 +97,8 @@ namespace TremorAnalysis
                 //tremorFrequency = x[maxEnergyIndex];
                 //myWindow.UpdateFrequencyLabel(tremorFrequency.ToString("F1") + " Hz");
             }
+            // Clear rms chart data
+            rmsChart.clearSeries();
         }
     }
 }

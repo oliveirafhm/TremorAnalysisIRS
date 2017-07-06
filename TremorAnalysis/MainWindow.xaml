@@ -2,13 +2,13 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
-        Title="Tremor Analysis using Intel RealSense (by Fábio Henrique and Adriano Andrade)" Height="700" Width="800" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Closing="Window_Closing" 
-        Icon="/imgs/handtremor.png">
+        Title="Tremor Analysis using Intel RealSense (by Fábio Henrique and Adriano Andrade)" Height="750" Width="800" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Closing="Window_Closing" 
+        Icon="/imgs/handtremor.ico">
     <!--RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.ClearTypeHint="Enabled" RenderOptions.EdgeMode="Aliased">-->
     <Grid>
         <Grid.RowDefinitions>
             <!--<RowDefinition Height="20"/>-->
-            <RowDefinition Height="638"/>
+            <RowDefinition Height="688"/>
             <RowDefinition Height="35"/>
         </Grid.RowDefinitions>
         <!--<Menu Grid.Row="0"></Menu>-->
@@ -25,12 +25,13 @@
                     </Border>
                     <Button x:Name="startButton" Content="Start" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Height="30" Click="startButton_Click"/>
                     <Button x:Name="stopButton" Content="Stop" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Height="30" Click="stopButton_Click"/>
-                    <oxy:PlotView Name="palmSpeedChart" Margin="0,355,5,127" Background="#E5E5E5"/>
-                    <oxy:PlotView Name="rmsChart" Margin="0,485,5,5" Background="#E5E5E5"/>
-                    <Label Content="RMS Crossing" HorizontalAlignment="Left" Margin="10,56,0,0" VerticalAlignment="Top" FontSize="20"/>
-                    <Label x:Name="rmsCrossLabel" Content="-" HorizontalAlignment="Left" Margin="28,98,0,0" VerticalAlignment="Top" FontSize="20"/>
-                    <Label Content="RMS" HorizontalAlignment="Left" Margin="10,140,0,0" VerticalAlignment="Top" FontSize="20"/>
-                    <Label x:Name="rmsLabel" Content="-" HorizontalAlignment="Left" Margin="27,182,0,0" VerticalAlignment="Top" FontSize="20"/>
+                    <oxy:PlotView Name="palmSpeedChart" Margin="0,355,8,175" Background="#E5E5E5"/>
+                    <oxy:PlotView Name="rmsChart" Margin="0,485,400,5" Background="#E5E5E5"/>
+                    <oxy:PlotView Name="rmsCrossChart" Margin="393,485,8,5" Background="#E5E5E5"/>
+                    <Label Content="RMS Crossing" HorizontalAlignment="Left" Margin="10,56,0,0" VerticalAlignment="Top" FontSize="20" Visibility="Hidden"/>
+                    <Label x:Name="rmsCrossLabel" Content="-" HorizontalAlignment="Left" Margin="28,98,0,0" VerticalAlignment="Top" FontSize="20" Visibility="Hidden"/>
+                    <Label Content="RMS" HorizontalAlignment="Left" Margin="10,140,0,0" VerticalAlignment="Top" FontSize="20" Visibility="Hidden"/>
+                    <Label x:Name="rmsLabel" Content="-" HorizontalAlignment="Left" Margin="28,182,0,0" VerticalAlignment="Top" FontSize="20" Visibility="Hidden"/>
                 </Grid>
             </TabItem>
             <!--<TabItem Header="Configuration" IsEnabled="False">

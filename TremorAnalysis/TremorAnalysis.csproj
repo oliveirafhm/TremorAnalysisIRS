@@ -14,6 +14,7 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -26,7 +27,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -51,40 +51,42 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>handtremor.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Biolab.SJSM.DSP">
-      <HintPath>..\..\LearningRealSense\LearningRealSense\References\Biolab.SJSM.DSP.dll</HintPath>
-    </Reference>
     <Reference Include="libpxcclr.cs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca106b2214526f83, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Intel\RSSDK\bin\x64\libpxcclr.cs.dll</HintPath>
     </Reference>
-    <Reference Include="MigraDoc.DocumentObjectModel">
-      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\MigraDoc.DocumentObjectModel.dll</HintPath>
-    </Reference>
-    <Reference Include="MigraDoc.Rendering">
-      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\MigraDoc.Rendering.dll</HintPath>
-    </Reference>
-    <Reference Include="MigraDoc.RtfRendering">
-      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\MigraDoc.RtfRendering.dll</HintPath>
-    </Reference>
     <Reference Include="OxyPlot">
       <HintPath>..\packages\OxyPlot.Core.2014.1.546\lib\portable-net4+sl4+wp71+win8\OxyPlot.dll</HintPath>
-    </Reference>
-    <Reference Include="OxyPlot.Pdf">
-      <HintPath>..\packages\OxyPlot.Pdf.2014.1.546\lib\net40\OxyPlot.Pdf.dll</HintPath>
     </Reference>
     <Reference Include="OxyPlot.Wpf">
       <HintPath>..\packages\OxyPlot.Wpf.2014.1.546\lib\net40\OxyPlot.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="OxyPlot.Xps">
       <HintPath>..\packages\OxyPlot.Wpf.2014.1.546\lib\net40\OxyPlot.Xps.dll</HintPath>
-    </Reference>
-    <Reference Include="PdfSharp">
-      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\PdfSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="PdfSharp.Charting">
-      <HintPath>..\packages\PDFsharp-MigraDoc-GDI.1.32.4334.0\lib\net20\PdfSharp.Charting.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -106,11 +108,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ChartThread.cs" />
+    <Compile Include="PalmSpeedChart.cs" />
     <Compile Include="ConvertBitmap.cs" />
     <Compile Include="FPSTimer.cs" />
     <Compile Include="HandIRSData.cs" />
     <Compile Include="MainPipeline.cs" />
+    <Compile Include="RMSChart.cs" />
     <Compile Include="SignalAnalysis.cs" />
     <Compile Include="UsefulFunctions.cs" />
     <Page Include="MainWindow.xaml">
@@ -178,6 +181,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="imgs\handtremor.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="imgs\handtremor.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="handtremor.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

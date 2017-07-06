@@ -26,14 +26,13 @@ namespace TremorAnalysis
     {
         public bool stop = false;
 
-        public PlotModel plotModelSpeedNorm;
-        public LineSeries lineSerieSpeedNorm;
         public List<DataPoint> lineSerieSpeedNormBuffer = new List<DataPoint>();
         public bool plotSNNow = false;
 
         public int fps = 50; // Usually value
         public List<DataPoint> speedNormBuffer = new List<DataPoint>();
-
+        public int windowLengthMS = 640;// 1280 = 64 points || 640 = 32 points
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -97,39 +96,43 @@ namespace TremorAnalysis
             handTrackingThread.Priority = ThreadPriority.Highest;
             handTrackingThread.Start();
 
-            // Start chart handle thread
-            Thread chartHandleThread = new Thread(startChartHandle);
-            chartHandleThread.Priority = ThreadPriority.Highest;
-            chartHandleThread.Start();
+            // Start palm speed chart handle thread
+            Thread palmSpeedChartThread = new Thread(startPalmSpeedChart);
+            palmSpeedChartThread.Priority = ThreadPriority.Highest;
+            palmSpeedChartThread.Start();
 
             // Start signal analysis thread
             Thread signalAnalysisThread = new Thread(startSignalAnalysis);
             signalAnalysisThread.Priority = ThreadPriority.Highest;
             signalAnalysisThread.Start();
+
+            // Start RMS chart handle thread (RMS comes from signal analysis thread)
+            //Thread rmsChartThread = new Thread(startRMSChart);
+            //rmsChartThread.Priority = ThreadPriority.Highest;
+            //rmsChartThread.Start();
         }
 
         private void startSignalAnalysis()
         {
             //UpdateFrequencyLabel(" - Hz");
             // Window length (ms) that enable to get power of 2 in points
-            SignalAnalysis sa = new SignalAnalysis(this, 1280);
+            SignalAnalysis sa = new SignalAnalysis(this, windowLengthMS);
         }
 
-        private void startChartHandle()
+        //private void startRMSChart()
+        //{
+
+        //}
+
+        private void startPalmSpeedChart()
         {
-            ChartThread ct = new ChartThread(this);
+            PalmSpeedChart ct = new PalmSpeedChart(this);
         }
 
         private void startHandTracking()
         {
             MainPipeline mp = new MainPipeline(this);
-            // Changed to BeginInvoke from Invoke
-            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
-            {
-                streamImg.Source = null;
-                lineSerieSpeedNorm.Points.Clear();
-                updateSpeedNormChart();                
-            }));
+            clearUI();
             mp.Start();
             // Changed to BeginInvoke from Invoke
             this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(delegate()
@@ -139,13 +142,28 @@ namespace TremorAnalysis
             }));
         }
 
+        private void clearUI()
+        {
+            // Changed to BeginInvoke from Invoke
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
+            {
+                streamImg.Source = null;
+
+                updateSpeedNormChart();
+                updateRMSChart();
+
+                UpdateRMSLabel("-");
+                UpdateRMSCrossLabel("-");
+            }));
+        }
+
         private void stopButton_Click(object sender, RoutedEventArgs e)
         {
             stop = true;
         }
 
         public void DisplayBitmap(Bitmap bitmap)
-        {            
+        {
             this.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
             {
                 if (bitmap != null)
@@ -173,9 +191,18 @@ namespace TremorAnalysis
         {
             // Changed to BeginInvoke from Invoke
             this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
-           {
-               palmSpeedChart.InvalidatePlot(true);
-           }));
+            {
+                palmSpeedChart.InvalidatePlot(true);
+            }));
+        }
+        // Updates both (rms and rms crossing charts)
+        public void updateRMSChart()
+        {
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(delegate()
+            {
+                rmsChart.InvalidatePlot(true);
+                rmsCrossChart.InvalidatePlot(true);
+            }));
         }
     }
 }
