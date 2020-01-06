@@ -1,0 +1,15 @@
+Tremor Analysis using RealSense (by Fábio Henrique and Adriano Andrade)
+
+Pre-requisits
+- Intel RealSense 3D Camera
+- Intel RealSense SDK (https://software.intel.com/en-us/intel-realsense-sdk/download)
+
+Installation instructions
+1 - Run TremorAnalysis.msi
+2 - Follow the installer instructions
+
+After install, you can run the app through desktop shortcut.
+
+Kind regards,
+Fábio Henrique M. Oliveira
+oliveirafhm@gmail.com
