@@ -11,4 +11,4 @@ MHWT - Measurement of human wrist tremor through depth data.
 
 ## Authors
 * Fábio Henrique M Oliveira (oliveirafhm@gmail.com)
-* Adriano O Andrade (adriano@ufu.br)
+* Adriano O Andrade (adriano@ufu.br) - Advisor
